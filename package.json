@@ -1,0 +1,28 @@
+{
+  "name": "react-store",
+  "version": "0.1.0",
+  "description": "Unidirectional data flow for React JS.",
+  "main": "Store.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [
+    "react",
+    "flux",
+    "store"
+  ],
+  "author": {
+    "name": "Wiktor Kozlik",
+    "email": "wiktor@rocketmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/wiktor256/react-store.git"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "react": "^0.12.2",
+    "weak-map": "^1.0.5",
+    "xtend": "^4.0.0"
+  }
+}
