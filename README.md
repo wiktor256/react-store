@@ -52,21 +52,50 @@ ToDoStore.js
 
 ```javascript
 var Store = require('react-store');
-// optional mixin that reduces boiler plate code
-var StoreHttpGetMixin = require('react-store/StoreHttpGetMixin');
+var Q = require('q');
+var $ = require('jquery');
 
-var ToDoStore = Store.extend(StoreHttpGetMixin, {
+// To prevent duplicate ajax calls to the same URL
+var _deferredRequests = {};
+
+var ToDoStore = Store.extend({
   getToDos: function() {
     if (this.toDos) {
       // we already have the data
       return this.toDos;
     }
+
     var _this = this;
-    // mixin function
-    this.httpGet('todos.json', function(result) {
-      _this.toDos = result.body;
-    });
-  }
+
+    this.httpGet({
+        url: 'todos.json',
+        cache: false
+      }, function(result) {
+        _this.toDos = result.body;
+      }
+    );
+  },
+
+  httpGet: function(options, callback) {
+    var deferredRequest = Q.defer();
+    _deferredRequests[options.url] = deferredRequest;
+
+    this.updateRootComponent(deferredRequest.promise);
+
+    $.ajax(options)
+      .done(function(data) {
+        callback(data);
+      })
+      .fail(function() {
+        callback({
+          error: 'Error occured'
+        });
+      })
+      .always(function() {
+        delete _deferredRequests[options.url];
+        deferredRequest.resolve();
+      });
+  },
 });
 
 module.exports = ToDoStore;
@@ -91,6 +120,9 @@ var ToDoList = React.createClass({
             return (<div key={toDo.id}>{ toDo.description }</div>);
           })
         );
+      }
+      else if (toDos.error) {
+        return (<div>{toDos.error}</div>);
       }
       else {
         return (<div>Nothing to do?</div>);
@@ -131,8 +163,6 @@ module.exports = App;
 
 React Store uses [weak-map](https://github.com/drses/weak-map) shim, and [xtend](https://github.com/Raynos/xtend).
 
-Optional StoreHttpGetMixin depends on [q](https://github.com/kriskowal/q) and [SuperAgent](https://github.com/visionmedia/superagent). These libraries should be provided by the app. The mixin can be easily implemented using jQuery or other library of choice.
-
 ## Private Stores
 
 If a store doesn't need to be shared by an entire application, it can be initialized with a rootComponent set to a specific view component. Only that component will be refreshed.
@@ -145,7 +175,7 @@ var MyStoreDefinition = {
 };
 ...
 componentDidMount: function() {
-  this.MyStore = Store.extend(StoreHttpGetMixin, MyStoreDefinition, {
+  this.MyStore = Store.extend(MyStoreDefinition, {
     rootComponent: this
   });
 }

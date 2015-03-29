@@ -11,7 +11,7 @@ var updateRootComponent = function(rootComponent) {
   if (!componentPromises.has(componentKey)) {
     var componentToUpdate = rootComponent || defaultRootComponent;
 
-    if (componentToUpdate && componentToUpdate._lifeCycleState === 'MOUNTED') {
+    if (componentToUpdate && componentToUpdate.isMounted()) {
       componentToUpdate.forceUpdate();
     }
   }
