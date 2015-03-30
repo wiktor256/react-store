@@ -77,6 +77,10 @@ var ToDoStore = Store.extend({
   },
 
   httpGet: function(options, callback) {
+    if (!options.url || _deferredRequests[options.url]) {
+      return;
+    }
+
     var deferredRequest = Q.defer();
     _deferredRequests[options.url] = deferredRequest;
 
