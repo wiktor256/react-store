@@ -1,6 +1,6 @@
 {
   "name": "react-store",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Unidirectional data flow for React JS.",
   "main": "Store.js",
   "scripts": {

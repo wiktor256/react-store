@@ -11,8 +11,12 @@ var updateRootComponent = function(rootComponent) {
   if (!componentPromises.has(componentKey)) {
     var componentToUpdate = rootComponent || defaultRootComponent;
 
-    if (componentToUpdate && componentToUpdate.isMounted()) {
-      componentToUpdate.forceUpdate();
+    if (componentToUpdate) {
+      this.setTimeout(function() {
+        if (componentToUpdate.isMounted()) {
+          componentToUpdate.forceUpdate();
+        }
+      }, 0);
     }
   }
 };
