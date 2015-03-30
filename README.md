@@ -52,11 +52,10 @@ ToDoStore.js
 
 ```javascript
 var Store = require('react-store');
-var Q = require('q');
 var $ = require('jquery');
 
-// To prevent duplicate ajax calls to the same URL
-var _deferredRequests = {};
+// To prevent parallel ajax requests to the same URL
+var _pendingRequests = {};
 
 var ToDoStore = Store.extend({
   getToDos: function() {
@@ -65,28 +64,23 @@ var ToDoStore = Store.extend({
       return this.toDos;
     }
 
-    var _this = this;
-
     this.httpGet({
         url: 'todos.json',
         cache: false
       }, function(result) {
-        _this.toDos = result.body;
-      }
+        this.toDos = result.body;
+      }.bind(this)
     );
   },
 
   httpGet: function(options, callback) {
-    if (!options.url || _deferredRequests[options.url]) {
+    if (!options.url || _pendingRequests[options.url]) {
       return;
     }
 
-    var deferredRequest = Q.defer();
-    _deferredRequests[options.url] = deferredRequest;
+    _pendingRequests[options.url] = true;
 
-    this.updateRootComponent(deferredRequest.promise);
-
-    $.ajax(options)
+    var promise = $.ajax(options)
       .done(function(data) {
         callback(data);
       })
@@ -96,9 +90,10 @@ var ToDoStore = Store.extend({
         });
       })
       .always(function() {
-        delete _deferredRequests[options.url];
-        deferredRequest.resolve();
+        delete _pendingRequests[options.url];
       });
+
+    this.updateRootComponent(promise);
   },
 });
 
