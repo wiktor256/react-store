@@ -32,10 +32,12 @@ module.exports = {
           componentPromises.addArrayItem(componentKey, promise);
           var _this = this;
 
-          promise.then(function(result) {
+          var onResolveOrReject = function() {
             componentPromises.removeArrayItem(componentKey, promise);
             updateRootComponent(_this.rootComponent);
-          });
+          };
+
+          promise.then(onResolveOrReject, onResolveOrReject);
         }
         else {
           updateRootComponent(this.rootComponent);
